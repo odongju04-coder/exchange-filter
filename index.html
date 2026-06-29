@@ -121,6 +121,12 @@
       <span>IELTS</span><input type="number" id="f-ielts" placeholder="예: 6.5" step="0.5">
     </div>
   </div>
+  <div class="fg" style="justify-content:flex-end">
+    <label style="flex-direction:row;align-items:center;gap:8px;cursor:pointer">
+      <input type="checkbox" id="f-dup" onchange="applyFilter()" style="width:16px;height:16px;cursor:pointer">
+      <span style="font-size:12px;font-weight:700;color:#b45309">중복 대학만 보기</span>
+    </label>
+  </div>
   <div class="btn-group">
     <button class="btn btn-primary" onclick="applyFilter()">필터 적용</button>
     <button class="btn btn-reset" onclick="resetFilter()">초기화</button>
@@ -128,7 +134,7 @@
 </div>
 
 <div class="result-bar">
-  <div class="result-count">검색 결과: <strong id="count">304</strong>개 대학 &nbsp;·&nbsp; 총원 <strong id="total-to">-</strong>명</div>
+  <div class="result-count">검색 결과: <strong id="count">304</strong>개 대학 &nbsp;·&nbsp; 총원 <strong id="total-to">-</strong>명 &nbsp;·&nbsp; 중복 <strong id="dup-count" style="color:#b45309">-</strong>개교</div>
   <div class="sort-bar">정렬:
     <select id="sort-by" onchange="applyFilter()">
       <option value="qs">QS 랭킹순</option>
@@ -174,6 +180,15 @@ function applyFilter() {
   const itp   = parseFloat(document.getElementById('f-itp').value);
   const ielts = parseFloat(document.getElementById('f-ielts').value);
   const hasScore = !isNaN(ibt) || !isNaN(itp) || !isNaN(ielts);
+  const dupOnly = document.getElementById('f-dup').checked;
+  // 중복 대학 키셋 (전체 DATA 기준)
+  const roundsByUniv = {};
+  DATA.forEach(d => {
+    const key = (d['대학명(영문)'] || d['대학명(국문)']).trim();
+    if (!roundsByUniv[key]) roundsByUniv[key] = new Set();
+    roundsByUniv[key].add(d['선발차수']);
+  });
+  const dupUnivs = new Set(Object.keys(roundsByUniv).filter(k => roundsByUniv[k].size > 1));
 
   filtered = DATA.filter(d => {
     if (cont  && d['대륙'] !== cont) return false;
@@ -192,6 +207,7 @@ function applyFilter() {
       if (!isNaN(ielts) && cIELTS !== '' && ielts >= cIELTS) pass = true;
       if (!pass) return false;
     }
+    if (dupOnly && !dupUnivs.has((d['대학명(영문)'] || d['대학명(국문)']).trim())) return false;
     return true;
   });
 
@@ -209,6 +225,15 @@ function applyFilter() {
 function render() {
   const tbody = document.getElementById('tbody');
   document.getElementById('count').textContent = filtered.length;
+  // 중복 대학 표시용 (filtered 기준)
+  const filteredRounds = {};
+  filtered.forEach(d => {
+    const key = (d['대학명(영문)'] || d['대학명(국문)']).trim();
+    if (!filteredRounds[key]) filteredRounds[key] = new Set();
+    filteredRounds[key].add(d['선발차수']);
+  });
+  const dupCount = Object.values(filteredRounds).filter(s => s.size > 1).length;
+  document.getElementById('dup-count').textContent = dupCount;
   const toByUniv = {};
   filtered.forEach(d => {
     const key = (d['대학명(영문)'] || d['대학명(국문)']).trim();
@@ -224,6 +249,15 @@ function render() {
   const itp   = parseFloat(document.getElementById('f-itp').value);
   const ielts = parseFloat(document.getElementById('f-ielts').value);
   const hasScore = !isNaN(ibt) || !isNaN(itp) || !isNaN(ielts);
+  const dupOnly = document.getElementById('f-dup').checked;
+  // 중복 대학 키셋 (전체 DATA 기준)
+  const roundsByUniv = {};
+  DATA.forEach(d => {
+    const key = (d['대학명(영문)'] || d['대학명(국문)']).trim();
+    if (!roundsByUniv[key]) roundsByUniv[key] = new Set();
+    roundsByUniv[key].add(d['선발차수']);
+  });
+  const dupUnivs = new Set(Object.keys(roundsByUniv).filter(k => roundsByUniv[k].size > 1));
 
   tbody.innerHTML = filtered.map((d, i) => {
     const qs  = d['QS Ranking'];
