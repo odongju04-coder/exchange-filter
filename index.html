@@ -209,7 +209,13 @@ function applyFilter() {
 function render() {
   const tbody = document.getElementById('tbody');
   document.getElementById('count').textContent = filtered.length;
-  const totalTO = filtered.reduce((s, d) => s + (parseInt(d['TO']) || 0), 0);
+  const toByUniv = {};
+  filtered.forEach(d => {
+    const key = (d['대학명(영문)'] || d['대학명(국문)']).trim();
+    const to = parseInt(d['TO']) || 0;
+    toByUniv[key] = Math.max(toByUniv[key] || 0, to);
+  });
+  const totalTO = Object.values(toByUniv).reduce((s, v) => s + v, 0);
   document.getElementById('total-to').textContent = totalTO;
   document.getElementById('no-result').style.display = filtered.length ? 'none' : 'block';
   if (!filtered.length) { tbody.innerHTML = ''; return; }
