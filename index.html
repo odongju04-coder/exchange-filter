@@ -4542,8 +4542,7 @@ function applyFilter() {
       if (cIBT === '' && cITP === '' && cIELTS === '') return true;
       let pass = false;
       if (!isNaN(ibt)   && cIBT   !== '' && ibt   >= cIBT)   pass = true;
-      if (!isNaN(itp)   && cITP   !== '' && itp   >= cITP)   pass = true;
-      if (!isNaN(ielts) && cIELTS !== '' && ielts >= cIELTS) pass = true;
+
       if (!pass) return false;
     }
     if (dupOnly && !dupUnivs.has((d['대학명(영문)'] || d['대학명(국문)']).trim())) return false;
